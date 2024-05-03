@@ -249,6 +249,25 @@ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         <return alias="p" class="com.redhat.rhn.domain.rhnpackage.Package" />
     </sql-query>
 
+    <sql-query name="Package.lookupByChannelAndSourcePackageName">
+        <![CDATA[
+            select {ps.*}
+                from rhnpackage ps
+                    join rhnpackageevr pe ON pe.id = ps.evr_id
+                    join rhnpackageextratag pt ON pt.package_id = ps.id
+                    join rhnpackageextratagkey ptk ON pt.key_id = ptk.id
+                    join rhnChannelPackage cp ON cp.package_id = ps.id
+                    join rhnChannel c ON c.id = cp.channel_id
+                where cp.channel_id = :channel_id
+                    and pe.epoch = :epoch
+                    and pe.version = :version
+                    and pe.release = :release
+                    and pt.value = :source_package_name
+                    and ptk.key = 'Source'
+        ]]>
+        <return alias="ps" class="com.redhat.rhn.domain.rhnpackage.Package" />
+    </sql-query>
+
     <sql-query name="Package.findMissingProductPackagesOnServer">
         <![CDATA[
         select {rp.*}
