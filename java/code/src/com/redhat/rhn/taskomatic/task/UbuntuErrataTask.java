@@ -15,12 +15,14 @@
 
 package com.redhat.rhn.taskomatic.task;
 
+import com.redhat.rhn.manager.content.debian.DebianErrataManager;
 import com.redhat.rhn.manager.content.ubuntu.UbuntuErrataManager;
 
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -35,11 +37,16 @@ public class UbuntuErrataTask extends RhnJavaJob {
         List<Long> channelIds = RepoSyncTask.getChannelIds(context.getJobDetail().getJobDataMap());
 
         try {
-            UbuntuErrataManager.sync(new HashSet<>(channelIds));
+            // UbuntuErrataManager.sync(new HashSet<>(channelIds));
+            DebianErrataManager.sync(new HashSet<>(channelIds));
         }
         catch (IOException e) {
             log.error(e);
             throw new JobExecutionException("Unable to sync erratas", e);
+        } 
+        catch (ParseException e) {
+            log.error(e);
+            throw new JobExecutionException("Unable to parse errata information", e);
         }
     }
 }

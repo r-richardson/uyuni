@@ -169,9 +169,6 @@ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
                      class="com.redhat.rhn.domain.rhnpackage.PackageArch"
                      column="package_arch_id"
                          cascade="none"/>
-
-
-
     </class>
 
    <query name="Package.findOtherArches">
@@ -179,8 +176,6 @@ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
                 where p.packageName = :name and p.org = :org and
                   p.packageEvr = :evr and p.packageArch != :arch]]>
     </query>
-
-
 
     <query name="Package.findById">
         <![CDATA[from com.redhat.rhn.domain.rhnpackage.Package as p where p.id = :id]]>
@@ -247,6 +242,25 @@ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
             and (:checksum is null or cs.checksum = :checksum)
         ]]>
         <return alias="p" class="com.redhat.rhn.domain.rhnpackage.Package" />
+    </sql-query>
+
+    <sql-query name="Package.lookupByChannelAndSourcePackageName">
+        <![CDATA[
+            select {ps.*}
+                from rhnpackage ps
+                    join rhnpackageevr pe ON pe.id = ps.evr_id
+                    join rhnpackageextratag pt ON pt.package_id = ps.id
+                    join rhnpackageextratagkey ptk ON pt.key_id = ptk.id
+                    join rhnChannelPackage cp ON cp.package_id = ps.id
+                    join rhnChannel c ON c.id = cp.channel_id
+                where cp.channel_id = :channel_id
+                    and pe.epoch = :epoch
+                    and pe.version = :version
+                    and pe.release = :release
+                    and pt.value = :source_package_name
+                    and ptk.key = 'Source'
+        ]]>
+        <return alias="ps" class="com.redhat.rhn.domain.rhnpackage.Package" />
     </sql-query>
 
     <sql-query name="Package.findMissingProductPackagesOnServer">
